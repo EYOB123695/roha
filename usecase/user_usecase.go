@@ -77,3 +77,16 @@ func (u *userUseCase) Login(email, password string) (string, error) {
 func (u *userUseCase) GetByID(id uint) (*domain.User, error) {
 	return u.userRepo.GetByID(id)
 }
+
+
+func (u *userUseCase) GetUserProfile(id uint) (*domain.UserProfileDTO, error) {
+	profile, err := u.userRepo.GetProfileByID(id)
+
+	if err != nil {
+		return nil,err
+	}
+	if profile == nil {
+		return nil, errors.New("user not found")
+	}
+	return profile, nil
+}

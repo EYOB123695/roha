@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/EYOB123695/roha/domain"
 	"github.com/gin-gonic/gin"
@@ -73,3 +74,21 @@ func (h *UserHandler) Validate(c *gin.Context) {
 		"user":    user,
 	})
 }
+
+func (h *UserHandler) GetUserProfile(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	profile, err := h.userUseCase.GetUserProfile(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, profile)
+}
+ 

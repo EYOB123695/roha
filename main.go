@@ -53,6 +53,7 @@ func main() {
 		protected.POST("/posts", postHandler.CreatePost)
 		protected.PUT("/posts/:id", postHandler.UpdatePost)
 		protected.DELETE("/posts/:id", postHandler.DeletePost)
+		protected.GET("/users/:id", userHandler.GetUserProfile)
 	}
 
 	port := os.Getenv("PORT")

@@ -75,3 +75,48 @@ func (r *userRepository) GetByEmail(email string) (*domain.User, error) {
 		UpdatedAt: gormUser.UpdatedAt,
 	}, nil
 }
+
+func (r *userRepository) GetProfileByID(id uint) (*domain.UserProfileDTO, error) {
+	var gormUser User 
+	err := r.db.First(&gormUser, id).Error
+	if err != nil { 
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	// count followers from the join table 
+	var followersCount int64 
+	r.db.Table("followers").Where("following_id = ?", id).Count(&followersCount)
+
+	// count following
+	var followingCount int64
+	r.db.Table("followers").Where("follower_id = ?", id).Count(&followingCount)
+    
+	var gormPosts []Post
+	r.db.Where("user_id = ? ", id).Find(&gormPosts)
+
+	var posts []domain.Post
+	for _, gp := range gormPosts {
+		posts = append(posts, domain.Post{
+			ID:        gp.ID,
+			UserID:    gp.UserID,
+			MediaURL:  gp.MediaURL,
+			MediaType: gp.MediaType,
+			Caption:   gp.Caption,
+			CreatedAt: gp.CreatedAt,
+			UpdatedAt: gp.UpdatedAt,
+		})
+	}
+
+	return &domain.UserProfileDTO{
+		ID:             gormUser.ID,
+		Username:       gormUser.Username,
+		Email:          gormUser.Email,
+		AvatarURL:      gormUser.AvatarURL,
+		FollowersCount: followersCount,
+		FollowingCount: followingCount,
+		Posts:          posts,
+	}, nil
+}
