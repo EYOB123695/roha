@@ -27,6 +27,12 @@ type UserRepository interface {
 	GetByID(id uint) (*User, error)
 	GetByEmail(email string) (*User, error)
 	GetProfileByID(id uint) (*UserProfileDTO, error) 
+	Follow(followerID, followingID uint) error 
+	IsFolllowing(followerID, followingID uint) (bool,error)
+
+
+
+
 }
 
 type UserUseCase interface {
@@ -34,5 +40,6 @@ type UserUseCase interface {
 	Login(email, password string) (string, error)
 	GetByID(id uint) (*User, error)
 	GetUserProfile(id uint) (*UserProfileDTO, error) 
+	FollowUser(followerID, followingID uint) error
 }
 

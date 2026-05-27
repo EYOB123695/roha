@@ -54,6 +54,7 @@ func main() {
 		protected.PUT("/posts/:id", postHandler.UpdatePost)
 		protected.DELETE("/posts/:id", postHandler.DeletePost)
 		protected.GET("/users/:id", userHandler.GetUserProfile)
+		protected.POST("/users/:id/follow", userHandler.FollowUser) 
 	}
 
 	port := os.Getenv("PORT")

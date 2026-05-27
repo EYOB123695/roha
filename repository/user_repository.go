@@ -120,3 +120,24 @@ func (r *userRepository) GetProfileByID(id uint) (*domain.UserProfileDTO, error)
 		Posts:          posts,
 	}, nil
 }
+
+
+func( r* UserRepository) Follow(followerID, followingID uint) error {
+	return r.db.Table("followers").Create(map[string]interface{}(
+		"follower_id":  followerID,
+		"following_id": followingID,
+	)).Error  
+}
+
+func (r *userRepository) IsFollowing(followerID, followingID uint) (bool, error) {
+	var count int64
+	err := r.db.Table("followers").Where("follower_id = ? AND following_id = ?", followerID, followingID).Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+
+
+
