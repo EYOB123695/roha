@@ -91,15 +91,14 @@ func (h *UserHandler) GetUserProfile(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, profile)
 }
- 
-
-func (h*UserHandler) FollowUser( c*gin.Context) { 
+func (h *UserHandler) FollowUser(c *gin.Context) { 
 	userVal, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 	currentUser := userVal.(domain.User)
+	
 	// Get target user ID from parameter
 	idStr := c.Param("id")
 	targetUserID, err := strconv.ParseUint(idStr, 10, 32)
@@ -107,6 +106,7 @@ func (h*UserHandler) FollowUser( c*gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
+	
 	// Call use case to follow
 	err = h.userUseCase.FollowUser(currentUser.ID, uint(targetUserID))
 	if err != nil {
@@ -114,8 +114,28 @@ func (h*UserHandler) FollowUser( c*gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully followed user"})
-
-
-
 }
 
+func (h *UserHandler) UnfollowUser(c *gin.Context) {
+	userVal, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	currentUser := userVal.(domain.User)
+	
+	// Get target user ID from parameter
+	idStr := c.Param("id")
+	targetUserID, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	err = h.userUseCase.UnFollowUser(currentUser.ID, uint(targetUserID))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully unfollowed user"})
+}

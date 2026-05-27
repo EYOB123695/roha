@@ -28,11 +28,8 @@ type UserRepository interface {
 	GetByEmail(email string) (*User, error)
 	GetProfileByID(id uint) (*UserProfileDTO, error) 
 	Follow(followerID, followingID uint) error 
-	IsFolllowing(followerID, followingID uint) (bool,error)
-
-
-
-
+	UnFollow(followerID, followingID uint) error 
+	IsFollowing(followerID, followingID uint) (bool, error)
 }
 
 type UserUseCase interface {
@@ -41,5 +38,6 @@ type UserUseCase interface {
 	GetByID(id uint) (*User, error)
 	GetUserProfile(id uint) (*UserProfileDTO, error) 
 	FollowUser(followerID, followingID uint) error
+	UnFollowUser(followerID, followingID uint) error
 }
 

@@ -91,46 +91,49 @@ func (u *userUseCase) GetUserProfile(id uint) (*domain.UserProfileDTO, error) {
 	return profile, nil
 }
 
-
-func (u* userUseCase) FollowUser(followerID, followingID uint)  error {
-
-	if follower_id == following_id {
-		return errors.New("You can not follow yourself")
-	}  
-	targetUser, err := u.UserRepo.GetByID(followingID)
-	if err != nil { 
+func (u *userUseCase) FollowUser(followerID, followingID uint) error {
+	if followerID == followingID {
+		return errors.New("you cannot follow yourself")
+	}
+	targetUser, err := u.userRepo.GetByID(followingID)
+	if err != nil {
 		return err
 	}
-
-	if targetUser == nil { 
-		return errors.New("user to follow not found ")
+	if targetUser == nil {
+		return errors.New("user to follow not found")
 	}
 
-	// check if already following 
-
-	alreadyfollowing, err := u.userRepo.IsFollowing(followerID, followingID)
-	if err != nil { 
+	alreadyFollowing, err := u.userRepo.IsFollowing(followerID, followingID)
+	if err != nil {
 		return err
 	}
-	if alreadyfollowing {
+	if alreadyFollowing {
 		return errors.New("you are already following this user")
-
-
 	}
-   // Add follow relationship
-	return u.userRepo.Follow(followerID, followingID)
 
+	return u.userRepo.Follow(followerID, followingID)
 }
 
+func (u *userUseCase) UnFollowUser(followerID, followingID uint) error {
+	if followerID == followingID {
+		return errors.New("you cannot unfollow yourself")
+	}
 
+	targetUser, err := u.userRepo.GetByID(followingID)
+	if err != nil {
+		return err
+	}
+	if targetUser == nil {
+		return errors.New("user to unfollow not found")
+	}
 
+	alreadyFollowing, err := u.userRepo.IsFollowing(followerID, followingID)
+	if err != nil {
+		return err
+	}
+	if !alreadyFollowing {
+		return errors.New("you are not following this user")
+	}
 
-
-
-
-
-
-	
-
-
+	return u.userRepo.UnFollow(followerID, followingID)
 }

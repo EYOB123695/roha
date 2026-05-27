@@ -122,11 +122,17 @@ func (r *userRepository) GetProfileByID(id uint) (*domain.UserProfileDTO, error)
 }
 
 
-func( r* UserRepository) Follow(followerID, followingID uint) error {
-	return r.db.Table("followers").Create(map[string]interface{}(
+func (r *userRepository) Follow(followerID, followingID uint) error {
+	return r.db.Table("followers").Create(map[string]interface{}{
 		"follower_id":  followerID,
 		"following_id": followingID,
-	)).Error  
+	}).Error
+}
+
+func (r *userRepository) UnFollow(followerID, followingID uint) error {
+	return r.db.Table("followers").
+		Where("follower_id = ? AND following_id = ?", followerID, followingID).
+		Delete(nil).Error
 }
 
 func (r *userRepository) IsFollowing(followerID, followingID uint) (bool, error) {
