@@ -157,3 +157,20 @@ func (h *UserHandler) GetFollowers(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"followers": followers})
 }
+
+func (h *UserHandler) GetFollowing(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	following, err := h.userUseCase.GetFollowing(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"following": following})
+}

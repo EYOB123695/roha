@@ -176,4 +176,41 @@ func (r *userRepository) GetFollowers(userID uint) ([]domain.FollowerDTO, error)
 		})
 	}
 	return followers, nil
+
 }
+
+func (r *userRepository) GetFollowing(userID uint) ([]domain.FollowerDTO, error) {
+	// Step 1: Get all following IDs from the join table
+	var followingIDs []uint
+	err := r.db.Table("followers").
+		Where("follower_id = ?", userID).
+		Pluck("following_id", &followingIDs).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// Step 2: If not following anyone, return empty list (not nil)
+	if len(followingIDs) == 0 {
+		return []domain.FollowerDTO{}, nil
+	}
+
+	// Step 3: Load the actual user records for those IDs
+	var gormUsers []User
+	err = r.db.Where("id IN ?", followingIDs).Find(&gormUsers).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// Step 4: Convert GORM models to domain DTOs
+	var following []domain.FollowerDTO
+	for _, gu := range gormUsers {
+		following = append(following, domain.FollowerDTO{
+			ID:        gu.ID,
+			Username:  gu.Username,
+			AvatarURL: gu.AvatarURL,
+		})
+	}
+	return following, nil
+}
+
+

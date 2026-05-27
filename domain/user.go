@@ -31,7 +31,7 @@ type UserRepository interface {
 	UnFollow(followerID, followingID uint) error 
 	IsFollowing(followerID, followingID uint) (bool, error)
 	GetFollowers(userID uint) ([]FollowerDTO, error)
-
+	GetFollowing(userID uint) ([]FollowerDTO, error)
 }
 
 type UserUseCase interface {
@@ -42,7 +42,7 @@ type UserUseCase interface {
 	FollowUser(followerID, followingID uint) error
 	UnFollowUser(followerID, followingID uint) error
 	GetFollowers(userID uint) ([]FollowerDTO, error)
-	
+	GetFollowing(userID uint) ([]FollowerDTO, error)
 }
 
 type FollowerDTO struct  { 

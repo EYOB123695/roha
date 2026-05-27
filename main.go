@@ -57,6 +57,7 @@ func main() {
 		protected.POST("/users/:id/follow", userHandler.FollowUser)
 		protected.POST("/users/:id/unfollow", userHandler.UnfollowUser)
 		protected.GET("/users/:id/followers", userHandler.GetFollowers)
+		protected.GET("/users/:id/following", userHandler.GetFollowing)
 	}
 
 	port := os.Getenv("PORT")

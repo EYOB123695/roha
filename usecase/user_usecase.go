@@ -151,3 +151,16 @@ func (u *userUseCase) GetFollowers(userID uint) ([]domain.FollowerDTO, error) {
 	return u.userRepo.GetFollowers(userID)
 }
 
+func (u *userUseCase) GetFollowing(userID uint) ([]domain.FollowerDTO, error) {
+	// Verify the user exists first
+	user, err := u.userRepo.GetByID(userID)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	return u.userRepo.GetFollowing(userID)
+}
+
