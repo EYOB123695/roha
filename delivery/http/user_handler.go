@@ -139,3 +139,21 @@ func (h *UserHandler) UnfollowUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully unfollowed user"})
 }
+
+
+func (h *UserHandler) GetFollowers(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	followers, err := h.userUseCase.GetFollowers(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"followers": followers})
+}
