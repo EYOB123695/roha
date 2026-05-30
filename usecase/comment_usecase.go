@@ -47,5 +47,14 @@ func (u *commentUseCase) AddComment(userID uint, postID uint, body string) (*dom
 		return nil, err
 	}
 
+
 	return comment, nil
+
 }
+
+
+
+
+
+
+

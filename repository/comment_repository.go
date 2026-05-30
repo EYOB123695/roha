@@ -48,14 +48,42 @@ func (r*commentRepository) Create( c* domain.Comment) error {
 	c.UpdatedAt = gormComment.UpdatedAt
 	return nil
 
+}
 
 
 
+func (r*commentRepository)  GetByPostID(postID unit) ([]*domain.Comment,error){
 
+	var gormComments []Comment
+	result := r.db.Preload("User").Where("post_id = ?", postID).Order("created_at desc").Find(&gormComments)
+
+	if result.Error != nil { 
+		return nil,result.Error
+	} 
+
+	var comments  []*domain.Comment 
+	var comments []*domain.Comment
+	for _, gc := range gormComments {
+		comments = append(comments, &domain.Comment{
+			ID:        gc.ID,
+			PostID:    gc.PostID,
+			UserID:    gc.UserID,
+			Body:      gc.Body,
+			CreatedAt: gc.CreatedAt,
+			UpdatedAt: gc.UpdatedAt,
+			User: domain.User{
+				ID:        gc.User.ID,
+				Username:  gc.User.Username,
+				Email:     gc.User.Email,
+				AvatarURL: gc.User.AvatarURL,
+			},
+		})
+	}
+	return comments, nil
+	
 
 
 }
-
 
 
 

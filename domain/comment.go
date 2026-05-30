@@ -22,4 +22,24 @@ type CommentUseCase interface {
 	AddComment(userID uint, postID uint, body string) (*Comment, error) 
 } 
 
+type CommentRepository interface { 
+  
+	Create(comment  *Comment) error 
+	GetByPostID(postID uint) ([]*Commment, erro)
+
+
+}
+
+type CommentUseCase interface{ 
+
+	AddComment(userID uint, postID uint, body string) (*Comment ,error)
+
+	GetCommentByPostID(postID uint) ([Comment, error])
+
+
+}
+
+
+
+
 
