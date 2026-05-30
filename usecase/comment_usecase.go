@@ -47,14 +47,47 @@ func (u *commentUseCase) AddComment(userID uint, postID uint, body string) (*dom
 		return nil, err
 	}
 
-
 	return comment, nil
-
 }
 
+func (u *commentUseCase) GetCommentsByPostID(postID uint) ([]*domain.Comment, error) {
+	// 1. Verify that the parent post exists
+	post, err := u.postRepo.GetByID(postID)
+	if err != nil {
+		return nil, err
+	}
+	if post == nil {
+		return nil, errors.New("post not found")
+	}
 
+	// 2. Fetch comments preloaded with commenter details, sorted by newest first
+	return u.commentRepo.GetByPostID(postID)
+}
 
+func (u *commentUseCase) DeleteComment(userID uint, commentID uint) error {
+	// 1. Fetch the comment to get its owner and associated post
+	comment, err := u.commentRepo.GetByID(commentID)
+	if err != nil {
+		return err
+	}
+	if comment == nil {
+		return errors.New("comment not found")
+	}
 
+	// 2. Fetch the parent post to identify the post owner
+	post, err := u.postRepo.GetByID(comment.PostID)
+	if err != nil {
+		return err
+	}
+	if post == nil {
+		return errors.New("post not found")
+	}
 
+	// 3. Authorization Check: Must be commenter OR post owner
+	if comment.UserID != userID && post.UserID != userID {
+		return errors.New("unauthorized to delete this comment")
+	}
 
-
+	// 4. Perform database deletion
+	return u.commentRepo.Delete(commentID)
+}

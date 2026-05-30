@@ -34,6 +34,7 @@ func main() {
 	// Initializing Handlers (HTTP Adapters)
 	userHandler := httpDelivery.NewUserHandler(userUseCase)
 	postHandler := httpDelivery.NewPostHandler(postUseCase)
+	commentHandler := httpDelivery.NewCommentHandler(commentUseCase)
 
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -46,6 +47,7 @@ func main() {
 	r.POST("/login", userHandler.Login)
 	r.GET("/posts", postHandler.GetPosts)
 	r.GET("/posts/:id", postHandler.GetPost)
+	r.GET("/posts/:id/comments", commentHandler.GetCommentsByPostID)
 
 	// Protected Routes (Uses injected requireAuth middleware)
 	protected := r.Group("/")
@@ -60,8 +62,8 @@ func main() {
 		protected.POST("/users/:id/unfollow", userHandler.UnfollowUser)
 		protected.GET("/users/:id/followers", userHandler.GetFollowers)
 		protected.GET("/users/:id/following", userHandler.GetFollowing)
-	    protected.POST("/posts/:id/comments", commentHandler.AddComment)
-
+		protected.POST("/posts/:id/comments", commentHandler.AddComment)
+		protected.DELETE("/comments/:id", commentHandler.DeleteComment)
 	}
 
 	port := os.Getenv("PORT")
