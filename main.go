@@ -67,6 +67,8 @@ func main() {
 	    protected.GET("/feed", postHandler.GetFeed) 
 	}
 
+	
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
