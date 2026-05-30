@@ -24,10 +24,12 @@ func main() {
 	// Initializing Infrastructure / Repositories
 	userRepo := repository.NewUserRepository(initializers.DB)
 	postRepo := repository.NewPostRepository(initializers.DB)
+	commentRepo := repository.NewCommentRepository(initializers.DB)
 
 	// Initializing Use Cases
 	userUseCase := usecase.NewUserUseCase(userRepo)
 	postUseCase := usecase.NewPostUseCase(postRepo)
+	commentUseCase := usecase.NewCommentUseCase(commentRepo, postRepo)
 
 	// Initializing Handlers (HTTP Adapters)
 	userHandler := httpDelivery.NewUserHandler(userUseCase)
@@ -58,6 +60,8 @@ func main() {
 		protected.POST("/users/:id/unfollow", userHandler.UnfollowUser)
 		protected.GET("/users/:id/followers", userHandler.GetFollowers)
 		protected.GET("/users/:id/following", userHandler.GetFollowing)
+	    protected.POST("/posts/:id/comments", commentHandler.AddComment)
+
 	}
 
 	port := os.Getenv("PORT")
