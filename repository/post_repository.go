@@ -111,3 +111,46 @@ func (r *postRepository) Delete(id uint) error {
 	result := r.db.Delete(&Post{}, id)
 	return result.Error
 }
+
+
+func (r *postRepository) GetFeed(userID uint) ([]domain.Post, error) { 
+	var followingIDs [] uint
+	err:= r.db.Table("followers").Where("follower_id = ?", userID).Pluck("following_id", &followingIDs).Error
+	if err ! nil { 
+		return nil,err
+	}
+
+	if len(folloeingIDs) == 0 { 
+		return []domain.Post{} ,nil
+	}
+    var gormPosts []Post
+    err = r.db.Preload("User").Where("user_id IN ?", followingIDs).Order("created_at desc").
+		Find(&gormPosts).Error
+	if err != nil {
+		return nil, err
+	}
+
+
+	var posts []domain.Post
+	for _, gp := range gormPosts {
+		posts = append(posts, domain.Post{
+			ID: gp.ID,
+			UserID: gp.UserID,
+			MediaURL: gp.MediaURL,
+			MediaType: gp.MediaType,
+			Caption: gp.Caption,
+			CreatedAt: gp.CreatedAt,
+			UpdatedAt: gp.UpdatedAt,
+			User: domain.User{
+				ID: gp.User.ID,
+				Username: gp.User.Username,
+				Email: gp.User.Email,
+				AvatarURL: gp.User.AvatarURL,
+			},
+		})
+	}
+	return posts, nil
+
+
+
+}

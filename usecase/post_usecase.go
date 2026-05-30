@@ -80,3 +80,8 @@ func (u *postUseCase) DeletePost(userID, postID uint) error {
 
 	return u.postRepo.Delete(postID)
 }
+func (u *postUseCase) GetFeed(userID uint) ([]domain.Post, error) {
+	return u.postRepo.GetFeed(userID)
+}
+
+

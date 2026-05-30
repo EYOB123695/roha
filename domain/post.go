@@ -19,7 +19,9 @@ type PostRepository interface {
 	GetByID(id uint) (*Post, error)
 	Update(post *Post) error
 	Delete(id uint) error
+	GetFeed(userID uint) ([]Post, error)
 }
+
 
 type PostUseCase interface {
 	CreatePost(userID uint, mediaURL, mediaType, caption string) (*Post, error)
@@ -27,4 +29,10 @@ type PostUseCase interface {
 	GetPost(id uint) (*Post, error)
 	UpdatePost(userID, postID uint, caption string) (*Post, error)
 	DeletePost(userID, postID uint) error
+	GetFeed(userID uint) ([]Post, error) // <-- Add this
+
 }
+
+
+
+

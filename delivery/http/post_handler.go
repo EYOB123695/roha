@@ -127,3 +127,25 @@ func (h *PostHandler) DeletePost(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Post deleted successfully"})
 }
+
+
+func (h *PostHandler) GetFeed(c *gin.Context) {
+	// 1. Extract current user from middleware context
+	userInterface, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	currentUser := userInterface.(domain.User)
+
+	// 2. Fetch personalized feed using the usecase
+	posts, err := h.postUseCase.GetFeed(currentUser.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 3. Respond with the list of feed posts
+	c.JSON(http.StatusOK, gin.H{"posts": posts})
+}
+
