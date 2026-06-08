@@ -10,6 +10,10 @@ import (
 	"github.com/EYOB123695/roha/repository"
 	"github.com/EYOB123695/roha/usecase"
 	"github.com/gin-gonic/gin"
+
+	_ "github.com/EYOB123695/roha/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func init() {
@@ -17,6 +21,14 @@ func init() {
 	initializers.ConnectToDB()
 }
 
+// @title Roha Social API
+// @version 1.0
+// @description Backend API for Roha social platform.
+// @host localhost:3000
+// @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	// Create a Gin router
 	r := gin.Default()
@@ -48,7 +60,11 @@ func main() {
 	r.GET("/posts", postHandler.GetPosts)
 	r.GET("/posts/:id", postHandler.GetPost)
 	r.GET("/posts/:id/comments", commentHandler.GetCommentsByPostID)
-
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/docs", func(c *gin.Context) {
+		c.Redirect(301, "/swagger/index.html")
+	})
+    
 	// Protected Routes (Uses injected requireAuth middleware)
 	protected := r.Group("/")
 	protected.Use(middleware.RequireAuth(userRepo))
@@ -65,6 +81,9 @@ func main() {
 		protected.POST("/posts/:id/comments", commentHandler.AddComment)
 		protected.DELETE("/comments/:id", commentHandler.DeleteComment)
 	    protected.GET("/feed", postHandler.GetFeed) 
+		protected.POST("/posts/:id/like", postHandler.LikePost) 
+		// <-- Add this route
+		protected.DELETE("/posts/:id/like", postHandler.UnlikePost)
 	}
 
 	

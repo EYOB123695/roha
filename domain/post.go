@@ -20,6 +20,8 @@ type PostRepository interface {
 	Update(post *Post) error
 	Delete(id uint) error
 	GetFeed(userID uint) ([]Post, error)
+	LikePost(userID uint, postID uint) error 
+	UnlikePost(userID uint ,postID uint) error
 }
 
 
@@ -30,6 +32,8 @@ type PostUseCase interface {
 	UpdatePost(userID, postID uint, caption string) (*Post, error)
 	DeletePost(userID, postID uint) error
 	GetFeed(userID uint) ([]Post, error) // <-- Add this
+	LikePost(userID uint, postID uint) error
+	UnlikePost(userID uint, postID uint) error 
 
 }
 

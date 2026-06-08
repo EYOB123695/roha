@@ -17,6 +17,20 @@ func NewCommentHandler(cc domain.CommentUseCase) *CommentHandler {
 	return &CommentHandler{commentUseCase: cc}
 }
 
+// AddComment godoc
+// @Summary Add a comment
+// @Description Add a comment to a specific post
+// @Tags comments
+// @Accept json
+// @Produce json
+// @Param id path int true "Post ID"
+// @Param body body map[string]string true "Comment data"
+// @Security BearerAuth
+// @Success 201 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string "{"error": "Invalid post ID"}"
+// @Failure 401 {object} map[string]string "{"error": "Unauthorized"}"
+// @Failure 404 {object} map[string]string "{"error": "post not found"}"
+// @Router /posts/{id}/comments [post]
 func (h *CommentHandler) AddComment(c *gin.Context) {
 	// 1. Retrieve the post ID from URL path parameters (/posts/:id/comments)
 	idStr := c.Param("id")
@@ -59,6 +73,16 @@ func (h *CommentHandler) AddComment(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"comment": comment})
 }
 
+// GetCommentsByPostID godoc
+// @Summary Get comments for a post
+// @Description Fetch all comments belonging to a specific post
+// @Tags comments
+// @Produce json
+// @Param id path int true "Post ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string "{"error": "Invalid post ID"}"
+// @Failure 404 {object} map[string]string "{"error": "post not found"}"
+// @Router /posts/{id}/comments [get]
 func (h *CommentHandler) GetCommentsByPostID(c *gin.Context) {
 	// 1. Retrieve the post ID from URL path parameters (/posts/:id/comments)
 	idStr := c.Param("id")
@@ -84,6 +108,19 @@ func (h *CommentHandler) GetCommentsByPostID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"comments": comments})
 }
 
+// DeleteComment godoc
+// @Summary Delete a comment
+// @Description Deletes a comment. Only the commenter or the post owner can delete the comment.
+// @Tags comments
+// @Accept json
+// @Produce json
+// @Param id path int true "Comment ID"
+// @Security BearerAuth
+// @Success 200 {object} map[string]string "{"message": "Comment deleted successfully"}"
+// @Failure 400 {object} map[string]string "{"error": "Invalid comment ID"}"
+// @Failure 404 {object} map[string]string "{"error": "comment not found"}"
+// @Failure 403 {object} map[string]string "{"error": "unauthorized to delete this comment"}"
+// @Router /comments/{id} [delete]
 func (h *CommentHandler) DeleteComment(c *gin.Context) {
 	// 1. Retrieve the comment ID from URL path parameters (/comments/:id)
 	idStr := c.Param("id")

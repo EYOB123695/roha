@@ -84,4 +84,31 @@ func (u *postUseCase) GetFeed(userID uint) ([]domain.Post, error) {
 	return u.postRepo.GetFeed(userID)
 }
 
+func (u *postUseCase) LikePost(userID uint, postID uint) error { 
 
+	post,err := u.postRepo.GetByID(postID)
+	if err != nil {
+		return err
+	}
+
+	if post == nil {
+		return errors.New("post not found")
+	}
+	return u.postRepo.LikePost(userID, postID)
+
+
+}
+
+
+
+func (u *postUseCase) UnlikePost(userID uint, postID uint) error {
+	post, err := u.postRepo.GetByID(postID)
+	if err != nil { 
+		return err
+	}
+
+	if post == nil { 
+		return errors.New("post not found")
+	}
+	return u.postRepo.UnlikePost(userID, postID)
+}

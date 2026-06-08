@@ -5,6 +5,7 @@ import (
 
 	"github.com/EYOB123695/roha/domain"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type postRepository struct {
@@ -114,14 +115,14 @@ func (r *postRepository) Delete(id uint) error {
 
 
 func (r *postRepository) GetFeed(userID uint) ([]domain.Post, error) { 
-	var followingIDs [] uint
-	err:= r.db.Table("followers").Where("follower_id = ?", userID).Pluck("following_id", &followingIDs).Error
-	if err ! nil { 
-		return nil,err
+	var followingIDs []uint
+	err := r.db.Table("followers").Where("follower_id = ?", userID).Pluck("following_id", &followingIDs).Error
+	if err != nil { 
+		return nil, err
 	}
 
-	if len(folloeingIDs) == 0 { 
-		return []domain.Post{} ,nil
+	if len(followingIDs) == 0 { 
+		return []domain.Post{}, nil
 	}
     var gormPosts []Post
     err = r.db.Preload("User").Where("user_id IN ?", followingIDs).Order("created_at desc").
@@ -154,3 +155,25 @@ func (r *postRepository) GetFeed(userID uint) ([]domain.Post, error) {
 
 
 }
+
+func (r *postRepository) LikePost(userID uint, postID uint) error {
+
+	like := Like{
+		UserID: userID,
+		PostID : postID,
+	}
+	return r.db.Clauses(clause.OnConflict{DoNothing: true}).Create(&like).Error
+}
+
+func (r*postRepository) UnlikePost(userID uint, postID uint) error { 
+
+	result := r.db.Where("user_id = ? AND post_id = ?" , userID, postID).Delete(&Like{})
+
+	return result.Error
+	
+}
+
+
+
+
+
