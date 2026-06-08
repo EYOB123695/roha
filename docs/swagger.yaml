@@ -6,6 +6,28 @@ info:
   title: Roha Social API
   version: "1.0"
 paths:
+  /bookmarks:
+    get:
+      description: Fetch a list of posts bookmarked by the current logged-in user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: '{"error": "Unauthorized"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get bookmarked posts
+      tags:
+      - posts
   /comments/{id}:
     delete:
       consumes:
@@ -277,6 +299,141 @@ paths:
       summary: Update a post
       tags:
       - posts
+  /posts/{id}/activity:
+    post:
+      consumes:
+      - application/json
+      description: Captures implicit engagement logs (views, clicks, shares)
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 'Activity data (action_type: string, watch_duration: int)'
+        in: body
+        name: body
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Activity tracked successfully"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: '{"error": "Invalid input"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: '{"error": "Unauthorized"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: '{"error": "post not found"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Track engagement activity on a post
+      tags:
+      - posts
+  /posts/{id}/bookmark:
+    delete:
+      consumes:
+      - application/json
+      description: Removes a post from the authenticated user's bookmarks
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Bookmark removed successfully"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: '{"error": "Invalid post ID"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: '{"error": "Unauthorized"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: '{"error": "post not found"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Remove bookmark from a post
+      tags:
+      - posts
+    post:
+      consumes:
+      - application/json
+      description: Saves a post to the authenticated user's bookmarks
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Post bookmarked successfully"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: '{"error": "Invalid post ID"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: '{"error": "Unauthorized"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: '{"error": "post not found"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Bookmark a post
+      tags:
+      - posts
   /posts/{id}/comments:
     get:
       description: Fetch all comments belonging to a specific post
@@ -443,6 +600,29 @@ paths:
       security:
       - BearerAuth: []
       summary: Like a post
+      tags:
+      - posts
+  /posts/recommendations:
+    get:
+      description: Fetch recommendations based on user interests, excluding liked/bookmarked
+        posts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: '{"error": "Unauthorized"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get post recommendations
       tags:
       - posts
   /signup:

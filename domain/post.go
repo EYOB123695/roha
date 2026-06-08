@@ -22,6 +22,12 @@ type PostRepository interface {
 	GetFeed(userID uint) ([]Post, error)
 	LikePost(userID uint, postID uint) error 
 	UnlikePost(userID uint ,postID uint) error
+	BookmarkPost(userID uint, postID uint) error
+	UnbookmarkPost(userID uint, postID uint) error
+	GetBookmarkedPosts(userID uint) ([]Post, error)
+	TrackActivity(userID uint, postID uint, actionType string, watchDuration int) error
+	GetRecommendations(userID uint) ([]Post,error)
+
 }
 
 
@@ -34,6 +40,11 @@ type PostUseCase interface {
 	GetFeed(userID uint) ([]Post, error) // <-- Add this
 	LikePost(userID uint, postID uint) error
 	UnlikePost(userID uint, postID uint) error 
+	BookmarkPost(userID uint, postID uint) error
+	UnbookmarkPost(userID uint, postID uint) error
+	GetBookmarkedPosts(userID uint) ([]Post, error)
+    TrackActivity(userID uint, postID uint, actionType string, watchDuration int) error
+    GetRecommendations(userID uint) ([]Post, error)
 
 }
 

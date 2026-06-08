@@ -298,5 +298,191 @@ func (h *PostHandler) UnlikePost(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Post unliked successfully"})
 }
 
+// BookmarkPost godoc
+// @Summary Bookmark a post
+// @Description Saves a post to the authenticated user's bookmarks
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param id path int true "Post ID"
+// @Security BearerAuth
+// @Success 200 {object} map[string]string "{"message": "Post bookmarked successfully"}"
+// @Failure 400 {object} map[string]string "{"error": "Invalid post ID"}"
+// @Failure 401 {object} map[string]string "{"error": "Unauthorized"}"
+// @Failure 404 {object} map[string]string "{"error": "post not found"}"
+// @Router /posts/{id}/bookmark [post]
+func (h *PostHandler) BookmarkPost(c *gin.Context) {
+	idStr := c.Param("id")
+	postID, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
+		return
+	}
+
+	userInterface, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	currentUser := userInterface.(domain.User)
+
+	err = h.postUseCase.BookmarkPost(currentUser.ID, uint(postID))
+	if err != nil {
+		if err.Error() == "post not found" {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Post bookmarked successfully"})
+}
+
+// UnbookmarkPost godoc
+// @Summary Remove bookmark from a post
+// @Description Removes a post from the authenticated user's bookmarks
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param id path int true "Post ID"
+// @Security BearerAuth
+// @Success 200 {object} map[string]string "{"message": "Bookmark removed successfully"}"
+// @Failure 400 {object} map[string]string "{"error": "Invalid post ID"}"
+// @Failure 401 {object} map[string]string "{"error": "Unauthorized"}"
+// @Failure 404 {object} map[string]string "{"error": "post not found"}"
+// @Router /posts/{id}/bookmark [delete]
+func (h *PostHandler) UnbookmarkPost(c *gin.Context) {
+	idStr := c.Param("id")
+	postID, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
+		return
+	}
+
+	userInterface, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	currentUser := userInterface.(domain.User)
+
+	err = h.postUseCase.UnbookmarkPost(currentUser.ID, uint(postID))
+	if err != nil {
+		if err.Error() == "post not found" {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Bookmark removed successfully"})
+}
+
+// GetBookmarkedPosts godoc
+// @Summary Get bookmarked posts
+// @Description Fetch a list of posts bookmarked by the current logged-in user
+// @Tags posts
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string]interface{}
+// @Failure 401 {object} map[string]string "{"error": "Unauthorized"}"
+// @Router /bookmarks [get]
+func (h *PostHandler) GetBookmarkedPosts(c *gin.Context) {
+	userInterface, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	currentUser := userInterface.(domain.User)
+
+	posts, err := h.postUseCase.GetBookmarkedPosts(currentUser.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"posts": posts})
+}
 
 
+
+
+// TrackActivity godoc
+// @Summary Track engagement activity on a post
+// @Description Captures implicit engagement logs (views, clicks, shares)
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param id path int true "Post ID"
+// @Param body body map[string]interface{} true "Activity data (action_type: string, watch_duration: int)"
+// @Security BearerAuth
+// @Success 200 {object} map[string]string "{"message": "Activity tracked successfully"}"
+// @Failure 400 {object} map[string]string "{"error": "Invalid input"}"
+// @Failure 401 {object} map[string]string "{"error": "Unauthorized"}"
+// @Failure 404 {object} map[string]string "{"error": "post not found"}"
+// @Router /posts/{id}/activity [post]
+func (h *PostHandler) TrackActivity(c *gin.Context) {
+	idStr := c.Param("id")
+	postID, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
+		return
+	}
+
+	var body struct {
+		ActionType    string `json:"action_type" binding:"required"`
+		WatchDuration int    `json:"watch_duration"`
+	}
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	userInterface, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	currentUser := userInterface.(domain.User)
+
+	err = h.postUseCase.TrackActivity(currentUser.ID, uint(postID), body.ActionType, body.WatchDuration)
+	if err != nil {
+		if err.Error() == "post not found" {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Activity tracked successfully"})
+}
+
+// GetRecommendations godoc
+// @Summary Get post recommendations
+// @Description Fetch recommendations based on user interests, excluding liked/bookmarked posts
+// @Tags posts
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string]interface{}
+// @Failure 401 {object} map[string]string "{"error": "Unauthorized"}"
+// @Router /posts/recommendations [get]
+func (h *PostHandler) GetRecommendations(c *gin.Context) {
+	userInterface, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	currentUser := userInterface.(domain.User)
+
+	posts, err := h.postUseCase.GetRecommendations(currentUser.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"posts": posts})
+}

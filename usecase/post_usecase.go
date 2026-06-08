@@ -112,3 +112,45 @@ func (u *postUseCase) UnlikePost(userID uint, postID uint) error {
 	}
 	return u.postRepo.UnlikePost(userID, postID)
 }
+
+func (u *postUseCase) BookmarkPost(userID uint, postID uint) error {
+	post, err := u.postRepo.GetByID(postID)
+	if err != nil {
+		return err
+	}
+	if post == nil {
+		return errors.New("post not found")
+	}
+	return u.postRepo.BookmarkPost(userID, postID)
+}
+
+func (u *postUseCase) UnbookmarkPost(userID uint, postID uint) error {
+	post, err := u.postRepo.GetByID(postID)
+	if err != nil {
+		return err
+	}
+	if post == nil {
+		return errors.New("post not found")
+	}
+	return u.postRepo.UnbookmarkPost(userID, postID)
+}
+
+func (u *postUseCase) GetBookmarkedPosts(userID uint) ([]domain.Post, error) {
+	return u.postRepo.GetBookmarkedPosts(userID)
+}
+
+func (u *postUseCase) TrackActivity(userID uint, postID uint, actionType string, watchDuration int) error {
+	post, err := u.postRepo.GetByID(postID)
+	if err != nil {
+		return err
+	}
+	if post == nil {
+		return errors.New("post not found")
+	}
+	return u.postRepo.TrackActivity(userID, postID, actionType, watchDuration)
+}
+
+func (u *postUseCase) GetRecommendations(userID uint) ([]domain.Post, error) {
+	return u.postRepo.GetRecommendations(userID)
+}
+

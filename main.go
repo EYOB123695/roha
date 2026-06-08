@@ -84,6 +84,12 @@ func main() {
 		protected.POST("/posts/:id/like", postHandler.LikePost) 
 		// <-- Add this route
 		protected.DELETE("/posts/:id/like", postHandler.UnlikePost)
+		protected.POST("/posts/:id/bookmark", postHandler.BookmarkPost)
+		protected.DELETE("/posts/:id/bookmark", postHandler.UnbookmarkPost)
+		protected.GET("/bookmarks", postHandler.GetBookmarkedPosts)
+		protected.POST("/posts/:id/activity", postHandler.TrackActivity)
+		protected.GET("/posts/recommendations", postHandler.GetRecommendations)
+
 	}
 
 	
