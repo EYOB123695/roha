@@ -31,7 +31,7 @@ type Post struct {
 
 type Comment struct {
 	gorm.Model
-	PostID uint   `gorm:"not null"`
+	PostID uint   `gorm:"not null;index:idx_comments_post_id"` // B-Tree index for O(log N) comment lookups
 	UserID uint   `gorm:"not null"`
 	User   User   `gorm:"foreignKey:UserID"`
 	Body   string `gorm:"not null"`
