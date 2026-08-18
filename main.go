@@ -54,6 +54,15 @@ func main() {
 		})
 	})
 
+	// loader.io verification routes
+	loaderTokenHandler := func(c *gin.Context) {
+		c.String(200, "loaderio-2243a8a4089d49a8edc7a2eec362c2b8")
+	}
+	r.GET("/loaderio-2243a8a4089d49a8edc7a2eec362c2b8", loaderTokenHandler)
+	r.GET("/loaderio-2243a8a4089d49a8edc7a2eec362c2b8.txt", loaderTokenHandler)
+	r.GET("/loaderio-2243a8a4089d49a8edc7a2eec362c2b8.html", loaderTokenHandler)
+	r.GET("/loaderio-2243a8a4089d49a8edc7a2eec362c2b8/", loaderTokenHandler)
+
 	// Public Routes
 	r.POST("/signup", userHandler.Signup)
 	r.POST("/login", userHandler.Login)
