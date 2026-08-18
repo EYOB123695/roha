@@ -42,13 +42,19 @@ func (r *postRepository) Create(p *domain.Post) error {
 	p.ID = gormPost.ID
 	p.CreatedAt = gormPost.CreatedAt
 	p.UpdatedAt = gormPost.UpdatedAt
+
+	// Invalidate posts cache
+	r.cacheMutex.Lock()
+	r.lastFetched = time.Time{}
+	r.cacheMutex.Unlock()
+
 	return nil
 }
 
 func (r *postRepository) GetAll() ([]domain.Post, error) {
 	// Fast path: serve from RAM if cache is still fresh (sub-microsecond)
 	r.cacheMutex.RLock()
-	if len(r.cachedPosts) > 0 && time.Since(r.lastFetched) < r.cacheTTL {
+	if !r.lastFetched.IsZero() && time.Since(r.lastFetched) < r.cacheTTL {
 		posts := r.cachedPosts
 		r.cacheMutex.RUnlock()
 		return posts, nil
@@ -60,7 +66,7 @@ func (r *postRepository) GetAll() ([]domain.Post, error) {
 	defer r.cacheMutex.Unlock()
 
 	// Double-check after acquiring write lock (another goroutine may have refreshed)
-	if len(r.cachedPosts) > 0 && time.Since(r.lastFetched) < r.cacheTTL {
+	if !r.lastFetched.IsZero() && time.Since(r.lastFetched) < r.cacheTTL {
 		return r.cachedPosts, nil
 	}
 
@@ -70,7 +76,7 @@ func (r *postRepository) GetAll() ([]domain.Post, error) {
 		return nil, result.Error
 	}
 
-	var posts []domain.Post
+	posts := make([]domain.Post, 0, len(gormPosts))
 	for _, gp := range gormPosts {
 		posts = append(posts, domain.Post{
 			ID:        gp.ID,
@@ -138,12 +144,27 @@ func (r *postRepository) Update(p *domain.Post) error {
 	}
 
 	p.UpdatedAt = gp.UpdatedAt
+
+	// Invalidate posts cache
+	r.cacheMutex.Lock()
+	r.lastFetched = time.Time{}
+	r.cacheMutex.Unlock()
+
 	return nil
 }
 
 func (r *postRepository) Delete(id uint) error {
 	result := r.db.Delete(&Post{}, id)
-	return result.Error
+	if result.Error != nil {
+		return result.Error
+	}
+
+	// Invalidate posts cache
+	r.cacheMutex.Lock()
+	r.lastFetched = time.Time{}
+	r.cacheMutex.Unlock()
+
+	return nil
 }
 
 
