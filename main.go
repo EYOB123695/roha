@@ -30,8 +30,14 @@ func init() {
 // @in header
 // @name Authorization
 func main() {
-	// Create a Gin router
-	r := gin.Default()
+	// Set Gin to release mode in production to disable debug output
+	if os.Getenv("GIN_MODE") == "release" || os.Getenv("PORT") != "" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	// Use gin.New() instead of gin.Default() to avoid per-request console logging overhead
+	r := gin.New()
+	r.Use(gin.Recovery()) // Keep panic recovery, skip logger
 
 	// Initializing Infrastructure / Repositories
 	userRepo := repository.NewUserRepository(initializers.DB)

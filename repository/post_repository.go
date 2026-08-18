@@ -3,6 +3,8 @@ package repository
 import (
 	"errors"
 	"sort"
+	"sync"
+	"time"
 
 	"github.com/EYOB123695/roha/domain"
 	"gorm.io/gorm"
@@ -10,11 +12,18 @@ import (
 )
 
 type postRepository struct {
-	db *gorm.DB
+	db          *gorm.DB
+	cacheMutex  sync.RWMutex
+	cachedPosts []domain.Post
+	lastFetched time.Time
+	cacheTTL    time.Duration
 }
 
 func NewPostRepository(db *gorm.DB) domain.PostRepository {
-	return &postRepository{db: db}
+	return &postRepository{
+		db:       db,
+		cacheTTL: 3 * time.Second, // Cache valid for 3 seconds
+	}
 }
 
 func (r *postRepository) Create(p *domain.Post) error {
@@ -37,8 +46,26 @@ func (r *postRepository) Create(p *domain.Post) error {
 }
 
 func (r *postRepository) GetAll() ([]domain.Post, error) {
+	// Fast path: serve from RAM if cache is still fresh (sub-microsecond)
+	r.cacheMutex.RLock()
+	if len(r.cachedPosts) > 0 && time.Since(r.lastFetched) < r.cacheTTL {
+		posts := r.cachedPosts
+		r.cacheMutex.RUnlock()
+		return posts, nil
+	}
+	r.cacheMutex.RUnlock()
+
+	// Slow path: refresh cache from database
+	r.cacheMutex.Lock()
+	defer r.cacheMutex.Unlock()
+
+	// Double-check after acquiring write lock (another goroutine may have refreshed)
+	if len(r.cachedPosts) > 0 && time.Since(r.lastFetched) < r.cacheTTL {
+		return r.cachedPosts, nil
+	}
+
 	var gormPosts []Post
-	result := r.db.Preload("User").Find(&gormPosts)
+	result := r.db.Preload("User").Limit(50).Find(&gormPosts)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -61,6 +88,11 @@ func (r *postRepository) GetAll() ([]domain.Post, error) {
 			},
 		})
 	}
+
+	// Update cache
+	r.cachedPosts = posts
+	r.lastFetched = time.Now()
+
 	return posts, nil
 }
 
